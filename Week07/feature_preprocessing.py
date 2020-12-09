@@ -23,7 +23,7 @@ from pytorch_lightning.metrics import Accuracy
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 
-INPUT_SIZE = 33
+INPUT_SIZE = 36
 HIDDEN_SIZE = 25
 OUTPUT_SIZE = 5
 LEARNING_RATE = 1e-2
@@ -44,11 +44,14 @@ class CustomDataset(Dataset):
 
         X.drop(weekday_columns, axis=1, inplace=True)
 
-        X['Weekday'] = (2 * np.pi / 7.) * weekdays
+        X['Weekday_cos'] = np.cos(2 * np.pi / 7.) * weekdays
+        X['Weekday_sin'] = np.sin(2 * np.pi / 7.) * weekdays
 
-        X['Hour'] = (2 * np.pi / 24.) * X['Hour'].values
+        X['Hour_cos'] = np.cos(2 * np.pi / 24.) * X['Hour'].values
+        X['Hour_sin'] = np.sin(2 * np.pi / 24.) * X['Hour'].values
 
-        X['Month'] = (2 * np.pi / 12.) * X['Month'].values
+        X['Month_cos'] = np.cos(2 * np.pi / 12.) * X['Month'].values
+        X['Month_sin'] = np.sin(2 * np.pi / 12.) * X['Month'].values
 
         X['Gender'] = np.argmax(X[['Sex_Female', 'Sex_Male', 'Sex_Unknown']].values, axis=1)
 
@@ -70,11 +73,13 @@ class CustomDataset(Dataset):
         self.embedding_column = 'Gender'
         self.nrof_emb_categories = 3
         self.numeric_columns = ['IsDog', 'Age', 'HasName', 'NameLength', 'NameFreq', 'MixColor', 'ColorFreqAsIs',
-                    'ColorFreqBase', 'TabbyColor', 'MixBreed', 'Domestic', 'Shorthair', 'Longhair',
-                    'Year', 'Month', 'Day', 'Hour', 'Breed_Chihuahua Shorthair Mix', 'Breed_Domestic Medium Hair Mix',
-                    'Breed_Domestic Shorthair Mix', 'Breed_German Shepherd Mix', 'Breed_Labrador Retriever Mix',
-                     'Breed_Pit Bull Mix', 'Breed_Rare',
-                    'SexStatus_Flawed', 'SexStatus_Intact', 'SexStatus_Unknown', 'Weekday']
+                                'ColorFreqBase', 'TabbyColor', 'MixBreed', 'Domestic', 'Shorthair', 'Longhair',
+                                'Year', 'Day',  'Breed_Chihuahua Shorthair Mix', 'Breed_Domestic Medium Hair Mix',
+                                'Breed_Domestic Shorthair Mix', 'Breed_German Shepherd Mix', 'Breed_Labrador Retriever Mix',
+                                 'Breed_Pit Bull Mix', 'Breed_Rare',
+                                'SexStatus_Flawed', 'SexStatus_Intact', 'SexStatus_Unknown',
+                                'Weekday_cos', 'Weekday_sin', 'Hour_cos', 'Hour_sin',
+                                'Month_cos', 'Month_sin']
 
         return
 
