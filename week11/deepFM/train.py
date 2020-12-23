@@ -1,7 +1,6 @@
 import torch
 print(torch.__version__)
 
-import torch.nn as nn # содержит функции для реалзации архитектуры нейронных сетей
 import torch.optim as optim
 import torch.utils.data as data_utils
 
@@ -13,6 +12,7 @@ from week11.deepFM.data_loader import CustomDataset
 
 EPOCHS = 500
 EMBEDDING_SIZE = 5
+BATCH_SIZE = 512
 NROF_LAYERS = 3
 NROF_NEURONS = 50
 DEEP_OUTPUT_SIZE = 50
@@ -23,7 +23,9 @@ VALID_PATH = '/home/firiuza/sber_risk_DL/week11/data/valid_adult.pickle'
 
 class DeepFM:
     def __init__(self):
-        self.train_loader = CustomDataset(TRAIN_PATH)
+        self.train_dataset = CustomDataset(TRAIN_PATH)
+        self.train_loader = data_utils.DataLoader(dataset=self.train_dataset,
+                                                  batch_size=BATCH_SIZE, shuffle=True)
 
         self.build_model()
 
@@ -35,14 +37,14 @@ class DeepFM:
         return
 
     def build_model(self):
-        self.network = DeepFMNet(nrof_cat=self.train_loader.nrof_emb_categories, emb_dim=EMBEDDING_SIZE,
-                                 emb_columns=self.train_loader.embedding_columns,
-                                 numeric_columns=self.train_loader.numeric_columns,
+        self.network = DeepFMNet(nrof_cat=self.train_dataset.nrof_emb_categories, emb_dim=EMBEDDING_SIZE,
+                                 emb_columns=self.train_dataset.embedding_columns,
+                                 numeric_columns=self.train_dataset.numeric_columns,
                                  nrof_layers=NROF_LAYERS, nrof_neurons=NROF_NEURONS,
                                  output_size=DEEP_OUTPUT_SIZE,
                                  nrof_out_classes=NROF_OUT_CLASSES)
 
-        self.loss = nn.CrossEntropyLoss()
+        self.loss = torch.nn.BCEWithLogitsLoss()
         self.accuracy = Accuracy()
         self.optimizer = optim.Adam(self.network.parameters(), lr=LEARNING_RATE)
 
@@ -74,6 +76,9 @@ class DeepFM:
                 output = self.network(features)
                 # Calculate error and backpropagate
                 loss = self.loss(output, label)
+
+                output = torch.sigmoid(output)
+
                 loss.backward()
                 acc = self.accuracy(output, label).item()
 
@@ -87,7 +92,7 @@ class DeepFM:
 
                 if self.step % 50 == 0:
                     print('EPOCH %d STEP %d : train_loss: %f train_acc: %f' %
-                          (epoch, self.step, self.loss, acc))
+                          (epoch, self.step, loss.item(), acc))
 
             # self.train_writer.add_histogram('hidden_layer', self.network.linear1.weight.data, self.step)
 

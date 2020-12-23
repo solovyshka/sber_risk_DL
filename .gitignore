@@ -17,3 +17,9 @@ Week07/\.ipynb_checkpoints/
 Week07/logs/
 Week07/mlruns/
 
+
+week11/__pycache__/
+
+week11/deepFM/\.ipynb_checkpoints/
+
+week11/deepFM/__pycache__/

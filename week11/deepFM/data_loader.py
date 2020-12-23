@@ -9,12 +9,12 @@ from torch.utils.data import Dataset
 class CustomDataset(Dataset):
     def __init__(self, dataset_path):
         with open(dataset_path, 'rb') as f:
-            data = pickle.load(f)
+            data, self.nrof_emb_categories, self.unique_categories = pickle.load(f)
 
         self.embedding_columns = ['workclass_cat', 'education_cat', 'marital-status_cat', 'occupation_cat',
                                   'relationship_cat', 'race_cat',
                                   'sex_cat', 'native-country_cat']
-        self.nrof_emb_categories = []
+        self.nrof_emb_categories = {key + '_cat': val for key, val in self.nrof_emb_categories.items()}
         self.numeric_columns = ['age', 'fnlwgt', 'education-num', 'capital-gain', 'capital-loss',
                                 'hours-per-week']
 
@@ -30,8 +30,8 @@ class CustomDataset(Dataset):
 
     def __getitem__(self, idx):
 
-        row = self.X.take(idx, axis=0)
+        row = self.X.take([idx], axis=0)
 
-        row = {col: torch.tensor(row[col]) for i, col in enumerate(self.columns)}
+        row = {col: torch.tensor(row[col].values, dtype=torch.float32) for i, col in enumerate(self.columns)}
 
-        return row, self.y[idx]
+        return row, np.float32(self.y[idx])
