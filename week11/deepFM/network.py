@@ -53,7 +53,7 @@ class DenseFeatureLayer(nn.Module):
         first_order_embd_output = torch.squeeze(first_order_embd_output, dim=2)
         for i, col in enumerate(self.numeric_columns):
             if first_order_embd_output is None:
-                first_order_embd_output = torch.mul(numeric_features[i], self.first_order_embd[col])
+                first_order_embd_output = torch.mul(numeric_features[:, i], self.first_order_embd[col])
             else:
                 first_order_embd_output = torch.cat(
                     [first_order_embd_output,
@@ -73,7 +73,7 @@ class DenseFeatureLayer(nn.Module):
 
         for i, col in enumerate(self.numeric_columns):
             if second_order_embd_output is None:
-                second_order_embd_output = torch.mul(numeric_features[i], self.second_order_embd[col])
+                second_order_embd_output = torch.mul(numeric_features[:, i], self.second_order_embd[col])
             else:
                 second_order_embd_output = torch.cat(
                     [second_order_embd_output,
@@ -124,6 +124,7 @@ class MLPLayer(nn.Module):
         self.deep_block = torch.nn.Sequential(*list_layers)
 
         self.output_layer = torch.nn.Linear(nrof_neurons, output_size)
+        # self.output_layer.apply(self.init_weights)
 
     def init_weights(self, m):
         if type(m) == nn.Linear:

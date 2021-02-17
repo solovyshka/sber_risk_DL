@@ -19,15 +19,14 @@ def get_classmap(class_idx, last_convs, weight_softmax):
     return classmap
 
 def model_forward(batch_t):
-    resnet = models.resnet50(pretrained=True)
-    params = list(resnet.parameters())
+    res50_model = models.resnet50(pretrained=True)
+    params = list(res50_model.parameters())
     weights_softmax = np.squeeze(params[-2].data.numpy())
 
     last_convs = []
     def hook(module, input, output):
         last_convs.append(output)
 
-    res50_model = models.resnet50(pretrained=True)
     res50_model.layer4[2].conv3.register_forward_hook(hook)
 
     out = res50_model(batch_t)
@@ -65,6 +64,6 @@ def show_CAM(path):
 
 
 if __name__ == '__main__':
-    show_CAM(path ='./data/dog.jpg')
+    show_CAM(path ='./data/airmax.jpg')
 
 
